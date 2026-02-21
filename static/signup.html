@@ -1,0 +1,24 @@
+{% include "_header.html" %}
+
+
+<main>
+    <h1>Sign Up</h1>
+    <div id="toast"></div>
+
+    <form id="signup-form" class="card">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <div class="actions">
+            <button type="submit">Sign Up</button>
+        </div>
+
+        <p class="small">Already have an account? <a href="/login.html">Login here</a></p>
+    </form>
+</main>
+
+<script type="module" src="/static/js/pages/signup.js"></script>
+{% include "_footer.html" %}
