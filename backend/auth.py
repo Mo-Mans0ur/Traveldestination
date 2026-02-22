@@ -38,9 +38,19 @@ and checks if the resulting hash matches the stored hash.
 """
 
 
-def verify_password(stored_hash: str, password: str) -> bool:
-    candidate = hash_password(password)
-    return hmac.compare_digest(stored_hash, candidate)
+def verify_password(stored_hash: str, plain_password: str) -> bool:
+    try:
+        salt_hex, saved_hash = stored_hash.split(":", 1)
+        salt = bytes.fromhex(salt_hex)
+    except Exception:
+        # stored_hash is not in the expected format
+        return False
+
+    salted_password = salt + plain_password.encode("utf-8")
+    candidate_hash = hashlib.sha256(salted_password).hexdigest()
+
+    # Compare only the hash part securely
+    return hmac.compare_digest(saved_hash, candidate_hash)
 
 
 """
@@ -75,7 +85,7 @@ def get_user_id_from_request():
         payload = serializer.loads(token, max_age=60 * 60 * 24)
         return payload.get("user_id")
     except (BadSignature, SignatureExpired):
-        return "Token is invalid or expired"
+        return None
 
 
 """

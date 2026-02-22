@@ -1,6 +1,6 @@
-import { requireLogin } from "../auth";
-import { renderHeader, showToast } from "../ui";
-import { createDestination } from "../destinations";
+import { requireLogin } from "../auth.js";
+import { renderHeader, showToast } from "../ui.js";
+import { createDestination } from "../destinations.js";
 
 // make sure the user is logged in to access this page
 requireLogin();
@@ -16,8 +16,8 @@ function readFormData() {
     const fd = new FormData(form);
     return {
         title: fd.get("title"),
-        Date_from: fd.get("date_from"),
-        Date_to: fd.get("date_to"),
+        date_from: fd.get("date_from"),
+        date_to: fd.get("date_to"),
         country: fd.get("country"),
         location: fd.get("location"),
         description: fd.get("description"),
@@ -29,8 +29,8 @@ function validateFormData(payload) {
     if (!payload.title) {
         return showToast("Title is required");
     }
-    if (payload.Date_from && payload.Date_to) {
-        if (payload.Date_from > payload.Date_to) {
+    if (payload.date_from && payload.date_to) {
+        if (payload.date_from > payload.date_to) {
             return showToast("Start date cannot be after or equal to end date");
         }
     }
@@ -52,7 +52,7 @@ form.addEventListener("submit", async (e) => {
     try {
         await createDestination(payload);
         showToast("Destination created successfully");
-        window.location.href = "/index.html";
+        window.location.href = "/";
     } catch (error) {
         showToast("Failed to create destination: " + error.message);
     }

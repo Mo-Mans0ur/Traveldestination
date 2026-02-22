@@ -1,4 +1,4 @@
-import { apiFetch } from "../api";
+import { apiFetch } from "../api.js";
 import { renderHeader, showToast } from "../ui.js";
 import { setAuth } from "../auth.js";
 
@@ -27,7 +27,7 @@ signupForm.addEventListener("submit", async (e) => {
         const res = await handleSignup(username, password);
         setAuth(res.token, res.username);
         showToast("Signup successful");
-        window.location.href = "/index.html";
+        window.location.href = "/";
     } catch (error) {
         showToast("Signup failed: " + error.message);
     }

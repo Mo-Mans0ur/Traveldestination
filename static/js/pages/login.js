@@ -1,4 +1,4 @@
-import { apiFetch } from "../api";
+import { apiFetch } from "../api.js";
 import { renderHeader, showToast } from "../ui.js";
 import { setAuth } from "../auth.js";
 
@@ -28,7 +28,7 @@ loginForm.addEventListener("submit", async (e) => {
         const res = await handleLogin(username, password);
         setAuth(res.token, res.username);
         showToast("Login successful");
-        window.location.href = "/index.html";
+        window.location.href = "/";
     } catch (error) {
         showToast("Login failed: " + error.message);
     }

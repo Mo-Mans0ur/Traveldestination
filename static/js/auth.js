@@ -44,6 +44,6 @@ export function isLoggedIn() {
 // - if the user is not logged in, redirect to login page
 export function requireLogin() {
     if (!isLoggedIn()) {
-        window.location.href = "/login.html";
+        window.location.href = "/login";
     }
 }

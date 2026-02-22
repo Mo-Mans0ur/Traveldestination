@@ -1,10 +1,10 @@
-import { requireLogin } from "../auth";
-import { renderHeader, showToast } from "../ui";
+import { requireLogin } from "../auth.js";
+import { renderHeader, showToast } from "../ui.js";
 import {
   createDestination,
   getDestination,
   updateDestination,
-} from "../destinations";
+} from "../destinations.js";
 
 // make sure the user is logged in to access this page
 requireLogin();
@@ -96,7 +96,7 @@ form.addEventListener("submit", async (e) => {
   try {
     await updateDestination(id, payload);
     showToast("Destination updated successfully");
-    window.location.href = "/index.html";
+    window.location.href = "/";
   } catch (error) {
     showToast("Failed to update destination: " + error.message);
   }

@@ -1,6 +1,6 @@
-import { requireLogin, isLoggedIn } from "../auth";
-import { renderHeader, showToast } from "../ui";
-import { listDestinations, deleteDestination } from "../destinations";
+import { requireLogin, isLoggedIn } from "../auth.js";
+import { renderHeader, showToast } from "../ui.js";
+import { listDestinations, deleteDestination } from "../destinations.js";
 
 // make sure the user is logged in to access this page
 requireLogin();
@@ -36,7 +36,7 @@ function renderList(destinations) {
         card.className = "card";
         card.dataset.id = dest.id;
 
-        const dates = [dest.start_date, dest.end_date].filter(Boolean).join(" to ") || "Dates not set";
+        const dates = [dest.date_from, dest.date_to].filter(Boolean).join(" to ") || "Dates not set";
 
         card.innerHTML = `
             <h3>${escapeHtml(dest.name)}</h3>
@@ -51,7 +51,7 @@ function renderList(destinations) {
         `;
      // edit button: sends the user to the edit page with the destination id in the query string
      card.querySelector(".editBtn").addEventListener("click", () => {
-            window.location.href = `/edit.html?id=${dest.id}`;
+            window.location.href = `/edit?id=${dest.id}`;
         });
 
         // delete button: calls the API to delete the destination and removes it from the UI only if the user is logged in
@@ -85,4 +85,12 @@ function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+
+// load the destinations when the page loads
+if (!listEl) {
+    showToast("Missing element: id=\"list\" in the index.html");
+} else {
+    loadDestinations();
 }

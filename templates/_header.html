@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Destination</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
     <script type="module" src="/static/js/ui.js"></script>
 </head>
 <body>
     <header>
-        <nav>
+        <nav id="navLinks">
             <a href="/">List</a>
             <a href="/create">Create</a>
+            <a href="/login">Login</a>
+            <a href="/signup">Sign Up</a>
         </nav>
         <div id="authStatus"></div>
     </header>

@@ -4,37 +4,48 @@
 
 import { clearAuth, getUsername, isLoggedIn } from "./auth.js";
 
-
 // simple HTML escaping to prevent XSS in the UI (we should use a library for this in production)
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
- // render the header with the auth status (logged in as username + logout button)
+
+// update the header based on login status
 export function renderHeader() {
-  const el = document.getElementById("authStatus");
-  if (!el) return;
+  const nav = document.getElementById("navLinks");
+  const status = document.getElementById("authStatus");
+
+  if (!nav || !status) return;
 
   if (isLoggedIn()) {
-    const username = getUsername() || "user";
-    el.innerHTML = `
-            <span class="small">Logged in as <b>${escapeHtml(username)}</b></span>
-            <button id="logoutBtn" style="margin-left: 10px;">Logout</button>
-        `;
+    nav.innerHTML = `
+      <a href="/">List</a>
+      <a href="/create">Create</a>
+    `;
 
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        clearAuth();
-        window.location.href = "/login.html";
-      });
-    } else {
-      el.innerHTML += `<span style="color: red;">Not logged in</span>`;
-    }
+    const username = getUsername() || "user";
+    status.innerHTML = `
+      <span class="small">Logged in as <b>${escapeHtml(username)}</b></span>
+      <button id="logoutBtn" style="margin-left:10px;">Logout</button>
+    `;
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      clearAuth();
+      window.location.href = "/login";
+    });
+  } else {
+    nav.innerHTML = `
+      <a href="/">List</a>
+      <a href="/create">Create</a>
+      <a href="/login">Login</a>
+      <a href="/signup">Sign Up</a>
+    `;
+
+    status.innerHTML = `<span class="small">Not logged in</span>`;
   }
 }
 
@@ -49,3 +60,4 @@ export function showToast(message) {
     host.classList.remove("toast");
   }, 3000);
 }
+
