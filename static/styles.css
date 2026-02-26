@@ -23,8 +23,16 @@
 body {
   margin: 0;
   background:
-    radial-gradient(900px 450px at 50% 0%, rgba(122, 140, 255, 0.14), transparent 60%),
-    radial-gradient(700px 380px at 80% 10%, rgba(60, 200, 180, 0.08), transparent 60%),
+    radial-gradient(
+      900px 450px at 50% 0%,
+      rgba(122, 140, 255, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 380px at 80% 10%,
+      rgba(60, 200, 180, 0.08),
+      transparent 60%
+    ),
     var(--bg);
   color: var(--text);
 }
@@ -98,7 +106,7 @@ nav a:hover {
   gap: 8px;
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   color: var(--muted);
   font-size: 13px;
@@ -129,7 +137,10 @@ h1 {
   padding: 14px;
   margin-bottom: 12px;
   box-shadow: var(--shadow-soft);
-  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .card:hover {
@@ -152,7 +163,9 @@ label {
   font-size: 13px;
 }
 
-input, textarea, button {
+input,
+textarea,
+button {
   width: 100%;
   padding: 10px 11px;
   border-radius: var(--radius-sm);
@@ -163,8 +176,9 @@ input, textarea, button {
   outline: none;
 }
 
-input:focus, textarea:focus {
-  border-color: rgba(122, 140, 255, 0.50);
+input:focus,
+textarea:focus {
+  border-color: rgba(122, 140, 255, 0.5);
   box-shadow: 0 0 0 4px rgba(122, 140, 255, 0.12);
 }
 
@@ -176,12 +190,15 @@ textarea {
 button {
   cursor: pointer;
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.10);
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+  border-color: rgba(255, 255, 255, 0.1);
+  transition:
+    transform 120ms ease,
+    background 120ms ease,
+    border-color 120ms ease;
 }
 
 button:hover {
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.14);
 }
 
@@ -191,12 +208,12 @@ button:active {
 
 .btn-primary {
   background: rgba(122, 140, 255, 0.16);
-  border-color: rgba(122, 140, 255, 0.30);
+  border-color: rgba(122, 140, 255, 0.3);
 }
 
 .btn-primary:hover {
   background: rgba(122, 140, 255, 0.22);
-  border-color: rgba(122, 140, 255, 0.40);
+  border-color: rgba(122, 140, 255, 0.4);
 }
 
 .btn-danger {
@@ -253,13 +270,13 @@ button:active {
 }
 
 .toast.ok {
-  border-color: rgba(60, 200, 180, 0.30);
-  background: rgba(60, 200, 180, 0.10);
+  border-color: rgba(60, 200, 180, 0.3);
+  background: rgba(60, 200, 180, 0.1);
 }
 
 .toast.err {
-  border-color: rgba(255, 90, 110, 0.30);
-  background: rgba(255, 90, 110, 0.10);
+  border-color: rgba(255, 90, 110, 0.3);
+  background: rgba(255, 90, 110, 0.1);
 }
 
 @media (max-width: 720px) {
