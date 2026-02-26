@@ -60,7 +60,7 @@ the Frontend hides the token and stores it in Authentication header.
 """
 
 
-def generate_token(user_id: int) -> str:
+def generate_token(user_id: str) -> str:
     return serializer.dumps({"user_id": user_id})
 
 

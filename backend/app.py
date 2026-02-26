@@ -1,7 +1,11 @@
 from flask import Flask, request, jsonify, render_template
-from db import init_db, get_db_connection, now_iso
-from auth import hash_password, verify_password, generate_token, require_auth
+from .db import init_db, get_db_connection, now_epoch
+from .auth import hash_password, verify_password, generate_token, require_auth
+from .validators import validate_username
 
+import uuid
+from icecream import ic
+ic.configureOutput(prefix=f'------ | ', includeContext=True)
 
 # Initialize the Flask application
 app = Flask(__name__, template_folder="../templates",
@@ -22,7 +26,7 @@ def page_index():
     try:
         return render_template("index.html", title="Travel Destinations")
     except Exception as e:
-        print("ERROR in /:", e, flush=True)
+        ic("ERROR in /", e)
         return "system under maintenance", 500
 
 
@@ -35,7 +39,7 @@ def page_create():
     try:
         return render_template("create.html", title="Create Travel Destination")
     except Exception as e:
-        print("ERROR in /create:", e, flush=True)
+        ic("ERROR in /create", e)
         return "system under maintenance", 500
 
 
@@ -48,7 +52,7 @@ def page_edit():
     try:
         return render_template("edit.html", title="Edit Travel Destination")
     except Exception as e:
-        print("ERROR in /edit:", e, flush=True)
+        ic("ERROR in /edit", e)
         return "system under maintenance", 500
 
 
@@ -61,7 +65,7 @@ def page_login():
     try:
         return render_template("login.html", title="Login")
     except Exception as e:
-        print("ERROR in /login:", e, flush=True)
+        ic("ERROR in /login", e)
         return "system under maintenance", 500
 
 
@@ -74,7 +78,7 @@ def page_signup():
     try:
         return render_template("signup.html", title="Sign Up")
     except Exception as e:
-        print("ERROR in /signup:", e, flush=True)
+        ic("ERROR in /signup", e)
         return "system under maintenance", 500
 
 
@@ -92,28 +96,34 @@ the password is hashed using the hash_password function before being stored in t
 @app.post("/api/auth/signup")
 def api_signup():
     data = request.get_json(silent=True) or {}
-    username = data.get("username", "").strip()
+    username = data.get("username", "")
     password = data.get("password", "").strip()
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+    # Backend validation for username & password
+    try:
+        username = validate_username(username)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
+        user_id = uuid.uuid4().hex
         cursor.execute(
-            "INSERT INTO users (username, password_hash, created_at) VALUES (%s, %s, %s)",
-            (username, hash_password(password), now_iso())
+            "INSERT INTO users (user_id, username, password_hash, created_at) VALUES (%s, %s, %s, %s)",
+            (user_id, username, hash_password(password), now_epoch())
         )
 
         conn.commit()
-        user_id = cursor.lastrowid
         token = generate_token(user_id)
         return jsonify({"message": "User created successfully", "token": token}), 201
 
     except Exception as e:
-        print("ERROR in /api/auth/signup:", e, flush=True)
+        ic("ERROR in /api/auth/signup", e)
         if "UNIQUE constraint failed: users.username" in str(e):
             return jsonify({"error": "Username already exists"}), 409
         return jsonify({"error": str(e)}), 500
@@ -129,6 +139,38 @@ if the credentials are valid, it generates and returns a token for the user.
 """
 
 
+@app.get("/api/auth/check-username")
+def api_check_username():
+    """validate and check username availability.
+
+
+    """
+
+    raw_username = request.args.get("username", "")
+
+    # First, run the same backend validation used on signup
+    try:
+        username = validate_username(raw_username)
+    except ValueError as ve:
+        return jsonify({"valid": False, "error": str(ve)}), 200
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT user_id FROM users WHERE username = %s", (username,)
+    )
+    user = cursor.fetchone()
+    conn.close()
+
+    return jsonify(
+        {
+            "valid": True,
+            "available": user is None,
+        }
+    ), 200
+
+
 @app.post("/api/auth/login")
 def api_login():
     data = request.get_json(silent=True) or {}
@@ -142,7 +184,7 @@ def api_login():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(
-        "SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+        "SELECT user_id, username, password_hash FROM users WHERE username = %s", (username,))
     user = cursor.fetchone()
     conn.close()
 
@@ -152,7 +194,7 @@ def api_login():
     if not verify_password(user["password_hash"], password):
         return jsonify({"error": "Invalid username or password"}), 401
 
-    token = generate_token(user["id"])
+    token = generate_token(user["user_id"])
     return jsonify({"message": "Login successful", "token": token, "username": user["username"]}), 200
 
 
@@ -209,18 +251,20 @@ def api_create_destination(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    datetime = now_iso()
+    created_at = now_epoch()
+    destination_id = uuid.uuid4().hex
+    
     try:
         cursor.execute("""INSERT INTO destinations 
-                       (name, date_from, date_to, description, location, country, user_id, created_at, updated_at) 
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                       (title, date_from, date_to, description, location, country, user_id, datetime, datetime))
+                       (destination_id, name, date_from, date_to, description, location, country, user_id, created_at, updated_at) 
+                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                       (destination_id, title, date_from, date_to, description, location, country, user_id, created_at, created_at))
 
         conn.commit()
-        destination_id = cursor.lastrowid
 
         return jsonify({"message": "Destination created successfully", "destination_id": destination_id}), 201
     except Exception as e:
+        ic("ERROR in /api/destinations (create)", e)
         return jsonify({"error": "Failed to create destination"}), 500
     finally:
         conn.close()
@@ -232,7 +276,7 @@ this gets a specific destination by its ID, but only if it belongs to the authen
 """
 
 
-@app.get("/api/destinations/<int:destination_id>")
+@app.get("/api/destinations/<string:destination_id>")
 @require_auth
 def api_get_destination(user_id, destination_id):
     conn = get_db_connection()
@@ -241,7 +285,7 @@ def api_get_destination(user_id, destination_id):
     cursor.execute(
         """SELECT * 
         FROM destinations 
-        WHERE id = %s AND user_id = %s
+        WHERE destination_id = %s AND user_id = %s
         """, (destination_id, user_id))
     row = cursor.fetchone()
     conn.close()
@@ -259,7 +303,7 @@ this updates an existing destination by its ID, but only if it belongs to the au
 """
 
 
-@app.put("/api/destinations/<int:destination_id>")
+@app.put("/api/destinations/<string:destination_id>")
 @require_auth
 def api_update_destination(user_id, destination_id):
     data = request.get_json(silent=True) or {}
@@ -279,9 +323,9 @@ def api_update_destination(user_id, destination_id):
     cursor.execute(
         """UPDATE destinations 
         SET name = %s, date_from = %s, date_to = %s, description = %s, location = %s, country = %s, updated_at = %s
-        WHERE id = %s AND user_id = %s""",
+        WHERE destination_id = %s AND user_id = %s""",
         (title, date_from, date_to, description, location,
-         country, now_iso(), destination_id, user_id)
+         country, now_epoch(), destination_id, user_id)
     )
     conn.commit()
     updated = cursor.rowcount
@@ -304,7 +348,7 @@ the frontend should show:
 """
 
 
-@app.delete("/api/destinations/<int:destination_id>")
+@app.delete("/api/destinations/<string:destination_id>")
 @require_auth
 def api_delete_destination(user_id, destination_id):
 
@@ -313,7 +357,7 @@ def api_delete_destination(user_id, destination_id):
 
     cursor.execute(
         """DELETE FROM destinations 
-        WHERE id = %s AND user_id = %s""",
+        WHERE destination_id = %s AND user_id = %s""",
         (destination_id, user_id)
     )
 
@@ -326,6 +370,3 @@ def api_delete_destination(user_id, destination_id):
 
     return jsonify({"message": "Destination deleted successfully"}), 200
 
-
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)

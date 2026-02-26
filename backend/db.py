@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 import mysql.connector
 
@@ -23,9 +24,10 @@ def init_db():
     return
 
 
+"""Return current time as Unix epoch seconds (int).
+
+This matches the BIGINT created_at/updated_at columns in init.sql.
 """
-    Returns a MariaDB-friendly timestamp string.
-"""
-def now_iso() -> str:
- 
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def now_epoch() -> int:
+
+    return int(time.time())

@@ -225,6 +225,24 @@ button:active {
   font-size: 13px;
 }
 
+/* Signup username availability indicator */
+#username-status[data-state="checking"] {
+  color: #9ca3af; /* gray-400 */
+}
+
+#username-status[data-state="ok"] {
+  color: #22c55e; /* green-500 */
+}
+
+#username-status[data-state="taken"],
+#username-status[data-state="invalid"] {
+  color: #ef4444; /* red-500 */
+}
+
+#username-status[data-state="error"] {
+  color: var(--danger);
+}
+
 .toast {
   margin: 12px 0;
   padding: 10px 12px;

@@ -10,6 +10,10 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # Copy the full project (backend + templates + static)
 COPY . /app
 
+# Configure Flask to run the backend app module
+ENV FLASK_APP=backend.app
+
 EXPOSE 5000
 
-CMD ["python", "/app/backend/app.py"]
+# Start the Flask development server inside the container
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--debug", "--reload"]

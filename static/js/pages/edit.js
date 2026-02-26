@@ -20,7 +20,8 @@ const form = document.getElementById("edit-form");
 function getDestinationIdFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  return id ? parseInt(id) : null;
+  // IDs are UUID strings from the backend, so just return as-is
+  return id || null;
 }
 
 // fills the form with the destination data
@@ -66,7 +67,7 @@ function validateFormData(payload) {
 // get id from query
 const id = getDestinationIdFromQuery();
 if (!id) {
-  showToast("missing id in query string. Example: ?id=1");
+  showToast("missing id in query string. Example: ?id=some-id");
   form.style.display = "none";
 } else {
   // load the destination data and fill the form
