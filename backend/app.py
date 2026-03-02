@@ -120,7 +120,8 @@ def api_signup():
 
         conn.commit()
         token = generate_token(user_id)
-        return jsonify({"message": "User created successfully", "token": token}), 201
+        # we also send the username back so the frontend can show it in the header
+        return jsonify({"message": "User created successfully", "token": token, "username": username}), 201
 
     except Exception as e:
         ic("ERROR in /api/auth/signup", e)

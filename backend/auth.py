@@ -1,16 +1,17 @@
 import hashlib
 import hmac
 import os
+from datetime import datetime, timedelta
 from functools import wraps
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+
+import jwt
 from flask import request, jsonify
 
 
 # Secret key for signing tokens (should be kept secret in production)
 SECRET_KEY = os.environ.get("SECRET_KEY", "development_secret_key")
-
-# Serializer for generating and verifying tokens
-serializer = URLSafeTimedSerializer(SECRET_KEY)
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRES_SECONDS = 60 * 60 * 24  # 24 hours
 
 
 """
@@ -54,20 +55,31 @@ def verify_password(stored_hash: str, plain_password: str) -> bool:
 
 
 """
-makes a signed token with the user ID as the payload.
-the Frontend hides the token and stores it in Authentication header.
+creates a JWT for a user.
 
+we put the user id into the token and set an expiry time.
+the frontend stores this token and sends it back in the Authorization header.
 """
 
 
 def generate_token(user_id: str) -> str:
-    return serializer.dumps({"user_id": user_id})
+
+    now = datetime.utcnow()
+    payload = {
+        "sub": str(user_id),
+        "iat": now,
+        "exp": now + timedelta(seconds=JWT_EXPIRES_SECONDS),
+    }
+
+    # PyJWT returns a string token in v2+
+    token = jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
+    return token
 
 
 """
-verifies the token and extracts the user ID from it.
+reads the Authorization header, checks the JWT and returns the user id.
 
-the Header request should include the token in the Authentication header as "Bearer <token>".
+if the token is missing, expired or invalid we just return None.
 """
 
 
@@ -79,13 +91,15 @@ def get_user_id_from_request():
     token = auth_header.replace("Bearer ", "").strip()
 
     try:
-
-        # max_age is the token expiration time in seconds (e.g., 3600 for 1 hour)
-        # Token valid for 24 hours
-        payload = serializer.loads(token, max_age=60 * 60 * 24)
-        return payload.get("user_id")
-    except (BadSignature, SignatureExpired):
+        payload = jwt.decode(token, SECRET_KEY,
+                             algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
         return None
+    except jwt.InvalidTokenError:
+        return None
+
+    # We store the user id in the "sub" (subject) claim
+    return payload.get("sub")
 
 
 """
