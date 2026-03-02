@@ -18,7 +18,7 @@ init_db()
 # FRONTEND ROUTES
 ############################
 
-"""list over destinations"""
+"""the index and list over destinations"""
 
 
 @app.route("/")

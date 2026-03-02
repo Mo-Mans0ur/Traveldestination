@@ -3,8 +3,8 @@ import hmac
 import os
 from datetime import datetime, timedelta
 from functools import wraps
+import jwt 
 
-import jwt
 from flask import request, jsonify
 
 
